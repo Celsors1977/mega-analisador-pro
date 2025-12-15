@@ -77,3 +77,4 @@ st.plotly_chart(fig, use_container_width=True)
 # ----------------------------------------------------
 with st.expander("Ver Dados Brutos (Histórico)"):
     st.dataframe(df)
+
