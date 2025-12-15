@@ -3,26 +3,38 @@ import pandas as pd
 import plotly.express as px
 
 # ----------------------------------------------------
-# 1. CARREGAMENTO AUTOMÁTICO DE DADOS (AUTOMAÇÃO)
+# 1. CARREGAMENTO AUTOMÁTICO DE DADOS (AUTOMAÇÃO CORRIGIDA)
 # ----------------------------------------------------
-@st.cache_data(ttl=3600) # Armazena o dado em cache por 1 hora para não baixar toda vez
+@st.cache_data(ttl=3600) # Armazena o dado em cache por 1 hora
 def load_data():
     """Baixa o histórico completo da Mega-Sena da internet e retorna o DataFrame."""
-    URL_DADOS = 'https://raw.githubusercontent.com/luizcarlosg/Loterias/master/D_MEGA.CSV'
+    
+    # NOVA URL MAIS ESTÁVEL
+    URL_DADOS = 'https://raw.githubusercontent.com/devasc-public/projeto-mega-sena/main/d_megasena.csv' 
     
     try:
         # Baixa o conteúdo do CSV (sem precisar do arquivo Excel local)
-        df = pd.read_csv(URL_DADOS, sep=';', encoding='iso-8859-1')
+        # Note que o separador e a codificação mudam um pouco para este novo arquivo
+        df = pd.read_csv(URL_DADOS, sep=',', encoding='utf-8')
         
-        # Converte as colunas de dezenas para formato numérico (necessário para análise)
-        cols_dezenas = [f'Bola{i}' for i in range(1, 7)]
-        df[cols_dezenas] = df[cols_dezenas].apply(pd.to_numeric, errors='coerce')
+        # O novo CSV usa colunas D1, D2, D3, D4, D5, D6, vamos renomeá-las para manter a compatibilidade
+        # E garantir que estejam como números inteiros
+        cols_originais = [f'D{i}' for i in range(1, 7)]
+        cols_novas = [f'Bola{i}' for i in range(1, 7)]
+        
+        # Renomeia as colunas e converte para numérico
+        df = df.rename(columns=dict(zip(cols_originais, cols_novas)))
+        df[cols_novas] = df[cols_novas].apply(pd.to_numeric, errors='coerce')
+        
+        # A coluna de concurso também precisa estar como número inteiro
+        df['Concurso'] = pd.to_numeric(df['Concurso'], errors='coerce')
         
         return df
     
     except Exception as e:
+        # Se falhar, exibe uma mensagem de erro e interrompe a execução
         st.error(f"⚠️ Erro ao carregar dados online. Por favor, tente novamente mais tarde.")
-        st.stop() # Interrompe a execução se os dados não puderem ser carregados
+        st.stop()
         return None
 
 df = load_data()
@@ -77,4 +89,3 @@ st.plotly_chart(fig, use_container_width=True)
 # ----------------------------------------------------
 with st.expander("Ver Dados Brutos (Histórico)"):
     st.dataframe(df)
-
