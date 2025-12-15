@@ -59,6 +59,7 @@ def calcular_atraso(df):
         cols_dezenas = [f'Bola{i}' for i in range(1, 7)]
         
         # Filtra o DataFrame para concursos onde a dezena foi sorteada
+        # .any(axis=1) verifica se a dezena está em qualquer uma das colunas (Bola1 a Bola6)
         df_dezena = df[df[cols_dezenas].eq(dezena).any(axis=1)]
         
         if not df_dezena.empty:
@@ -78,15 +79,17 @@ def calcular_atraso(df):
 # 4. ANÁLISES E VISUALIZAÇÕES
 # ----------------------------------------------------
 
-# Seção de Frequência das Dezenas
+# --- Gráfico 1: Frequência das Dezenas ---
 st.header("Análise de Frequência das Dezenas")
 st.write("Verifique quais dezenas foram mais sorteadas na história.")
 
-# ... (Seu código de frequência original) ...
+# Conta a frequência de cada dezena (bolas 1 a 6)
 cols_dezenas = [f'Bola{i}' for i in range(1, 7)]
 frequencia = df[cols_dezenas].stack().value_counts().reset_index()
 frequencia.columns = ['Dezena', 'Frequência']
 frequencia['Dezena'] = frequencia['Dezena'].astype(int) 
+
+# Ordena pela dezena (1 a 60) para o gráfico
 frequencia = frequencia.sort_values(by='Dezena')
 
 fig_freq = px.bar(
@@ -102,7 +105,7 @@ st.plotly_chart(fig_freq, use_container_width=True)
 
 st.markdown("---") # Separador
 
-# Seção de Atraso das Dezenas (NOVO RECURSO)
+# --- Gráfico 2: Atraso das Dezenas ---
 st.header("⏳ Análise de Atraso das Dezenas")
 st.write("Dezenas com maior atraso (em concursos) são as que não são sorteadas há mais tempo.")
 
@@ -119,7 +122,7 @@ fig_atraso = px.bar(
     labels={'Dezena': 'Dezena', 'Atraso': 'Concursos em Atraso'},
     text='Atraso'
 )
-fig_atraso.update_traces(marker_color='#FF5733') # Cor Laranja/Vermelha para indicar atraso
+fig_atraso.update_traces(marker_color='#FF5733') 
 st.plotly_chart(fig_atraso, use_container_width=True)
 
 
